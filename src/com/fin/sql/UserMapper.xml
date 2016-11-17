@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ <mapper namespace="com.fin.dao.UserDAO">
+ 	<select id="findByUsername" parameterType="string" resultType="com.fin.entity.User">
+ 		select * from emp where username=#{username}
+ 	</select>
+ 	
+ 	<update id="update" parameterType="map">
+ 		<![CDATA[
+ 			update emp set password = #{password} where username = #{username}
+ 		]]>
+ 	</update>
+ </mapper>

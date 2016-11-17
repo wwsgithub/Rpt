@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<!-- saved from url=(0068)http://d8.sina.com.cn/litong/zhitou/sinaads/src/spec/sinaads_ck.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title> sinaads-ck-mp-script </title>
+</head>
+<body><div class="hidden" id="___SinaadsCrossDomainStorage___" style="position: absolute; left: -100000em; top: -100000em;"><iframe src="./store.html" frameborder="0"></iframe></div>
+  <script type="text/javascript">
+    /**
+     * CrossDomainStorage
+     */
+    (function(exports, name) {
+        var fns = [];
+        var isReady = 0;
+        var iframeStore = null;
+        var EXPORTNAME = name || '___SinaadsCrossDomainStorage___';
+        var HANDLE = EXPORTNAME + '.onReady';
+        var opt = {
+            domain: 'sina.com.cn',
+            url: 'http://news.sina.com.cn/iframe/87/store.html'
+        };
+        var ERROR = {
+            domain: 'fail to set domain!'
+        };
+        var loadStore = function() {
+            if (iframeStore) {
+                return;
+            }
+            try {
+                document.domain = opt.domain;
+            } catch (e) {
+                throw new Error(ERROR.domain);
+            }
+            var node = document.getElementById(EXPORTNAME);
+            if (node) {
+                node.parentNode.removeChild(node);
+            }
+            var iframeWrap = document.createElement('div');
+            var doc = document.body;
+            var iframe = '<iframe src="' + opt.url + '?handle=' + HANDLE + '&domain=' + opt.domain + '" frameborder="0"></iframe>';
+            var px = '-' + 1e5 + 'em';
+            iframeWrap.style.position = 'absolute';
+            iframeWrap.style.left = px;
+            iframeWrap.style.top = px;
+            iframeWrap.className = 'hidden';
+            iframeWrap.id = EXPORTNAME;
+            iframeWrap.innerHTML = iframe;
+            doc.insertBefore(iframeWrap, doc.childNodes[0]);
+        };
+
+        var checkReady = function() {
+            if (!isReady) {
+                loadStore();
+            }
+            return isReady;
+        };
+        var CrossDomainStorage = {};
+        CrossDomainStorage.ready = function(fn) {
+            if (!checkReady()) {
+                //ifrmae还没加载
+                fns.push(fn);
+                return;
+            }
+            fn(iframeStore);
+        };
+        CrossDomainStorage.onReady = function(store) {
+            if (isReady) {
+                return;
+            }
+            isReady = 1;
+            iframeStore = store;
+            if (fns) {
+                while (fns.length) {
+                    fns.shift()(store);
+                }
+            }
+            fns = null;
+        };
+        CrossDomainStorage.config = function(o) {
+            if (!o) {
+                return;
+            }
+            for (var i in o) {
+                if (o.hasOwnProperty(i)) {
+                    opt[i] = o[i] || opt[i];
+                }
+            }
+            return this;
+        };
+        exports[EXPORTNAME] = CrossDomainStorage;
+    })(window);
+
+    /*!
+     * sinaadToolkit
+     * @description 新浪广告工具包，提供了浏览器判断，渲染，cookie, storage, iframe, 转义等基础操作
+     * @author  acelan <xiaobin8[at]staff.sina.com.cn>
+     * @version  1.0.0
+     */
+    (function (window, undefined) {
+
+        "use strict";
+
+        /**
+         * @global
+         * @namespace
+         * @name sinaadToolkit
+         */
+        var sinaadToolkit = window.sinaadToolkit = window.sinaadToolkit || /** @lends sinaadToolkit */{
+            /**
+             * 工具包版本号
+             * @type {String}
+             * @const
+             */
+            VERSION : '1.0.0',
+            /**
+             * 模式 debug || release
+             * 在页面url中使用__sinaadToolkitDebug__可以触发debug模式
+             */
+            mode : window.location.href.indexOf('__sinaadToolkitDebug__') !== -1 ? 'debug' : 'release',  //是否开启debug模式
+            /**
+             * 调试方法，用于方便线上调试问题
+             * @param  {String} msg 输出的信息
+             */
+            debug : (function () {
+                /**
+                 * @remarks 当script放在head中，立即执行的时候doc.body不存在，这时候模拟的console窗口没有地方挂接
+                 * 这是我们选择的是抛弃这部分debug信息，后续考虑使用cache将这部分信息缓存下来，当body加载后进行回放
+                 * 但是考虑到这只是调试信息，而且head上挂接js的使用方法在广告逻辑上比较少用，因此没有必要花大力气用几行
+                 * 代码去实现这个功能。
+                 */
+                var containerId = 'sinaadToolkitDebugContainer';
+                var console = window.console || {
+                    log : function (msg) {
+                        if (!document.body) {
+                            return;
+                        }
+                        var consoleView = document.getElementById(containerId);
+                        if (!consoleView) {
+                            consoleView = document.createElement('ul');
+                            consoleView.id = containerId;
+                            consoleView.style.cssText = 'z-index:99999;overflow:auto;height:300px;position:absolute;right:0;top:0;opacity:.9;*filter:alpha(opacity=90);background:#fff;width:500px;';
+                            document.body.insertBefore(consoleView, document.body.firstChild);
+                        }
+                        var li = document.createElement('li');
+                        li.style.cssText = 'border-bottom:1px dotted #ccc;line-height:30px;font-size:12px;';
+                        li.innerHTML = msg + Array.prototype.slice.call(arguments, 1).join(' ');
+                        consoleView.appendChild(li);
+                    }
+                };
+                return function (msg) {
+                    if (sinaadToolkit.mode === 'debug') {
+                        console.log(msg, Array.prototype.slice.call(arguments, 1));
+                    }
+                };
+            })(),
+            /**
+             * 错误信息
+             */
+            error : function (msg, e) {
+                try {
+                    sinaadToolkit.sio.log('//d00.sina.com.cn/a.gif?' + [
+                        'type=' + 'sinaads_error',
+                        'msg=' + encodeURIComponent(msg ? msg : e ? e.message : 'unknow'),
+                        'ref=' + encodeURIComponent(sinaadToolkit.url.top),
+                        'ja=' + (navigator.javaEnabled() ? 1 : 0),
+                        'ck=' + (navigator.cookieEnabled ? 1 : 0),
+                        'ds=' + (window.screen.width + "x" + window.screen.height),
+                        'ua=' + encodeURIComponent(navigator.appVersion),
+                        'pf=' + navigator.platform,
+                        'ts=' + sinaadToolkit.now()
+                    ].join('&'));
+                } catch (e) {}
+
+                if (sinaadToolkit.mode === 'debug') {
+                    throw new Error(msg + (e ? ':' + e.message : ''));
+                }
+            },
+            /**
+             * 获取当前时间戳
+             * @return {Number} 当前时间戳
+             * @static
+             */
+            now : function () {
+                return +new Date();
+            },
+            /**
+             * 随机数生成，生成一个随机数的36进制表示方法
+             * @return {String} 生成一个随机的36进制字符串（包含0-9a-z）
+             * @static
+             */
+            rnd : function () {
+                return Math.floor(Math.random() * 2147483648).toString(36);
+            },
+            /**
+             * 获取[min, max]区间内任意整数
+             * @param  {Number} min 最小值
+             * @param  {Number} max 最大值
+             * @return {Number}     
+             */
+            rand : function (min, max) {
+                return Math.floor(min + Math.random() * (max - min + 1));
+            },
+            /**
+             * 把一个字符串生成唯一hash
+             * @param  {String} s 要生成hash的字符串
+             * @return {String}   36进制字符串
+             */
+            hash : function (s) {
+                var hash = 0,
+                    i = 0,
+                    w;
+
+                for (; !isNaN(w = s.charCodeAt(i++));) {
+                    hash = ((hash << 5) - hash) + w;
+                    hash = hash & hash;
+                }
+
+                return Math.abs(hash).toString(36);
+            },
+            /**
+             * 判断是否是函数
+             * @param  {Any}        source      需要判断的对象
+             * @return {Boolean}                是否是函数
+             * @staitc
+             */
+            isFunction : function (source) {
+                return '[object Function]' === Object.prototype.toString.call(source);
+            },
+            /**
+             * 判断是否是字符串
+             * @param  {Any} source 要判断的对象
+             * @return {Boolean}        是否字符串
+             * @static
+             */
+            isString : function (source) {
+                return '[object String]' === Object.prototype.toString.call(source);
+            },
+            /**
+             * 判断是否是null或者未定义
+             * @param  {Any} source  要判断的对象
+             * @return {Boolean}      是否为null或未定义
+             */
+            isNull : function (source) {
+                return ('undefined' === typeof source) || (source === null);
+            },
+            /**
+             * 判断是否是数组
+             */
+            isArray : function (source) {
+                return '[object Array]' === Object.prototype.toString.call(source);
+            },
+            /**
+             * 判断是否是数字
+             */
+            isNumber : function (source) {
+                return '[object Number]' === Object.prototype.toString.call(source) && isFinite(source);
+            }
+        };
+
+        /**
+         * @namespace sinaadToolkit.browser
+         */
+        sinaadToolkit.browser = sinaadToolkit.browser || (function (ua) {
+            /**
+             * @lends sinaadToolkit.browser
+             */
+            var browser = {
+                /**
+                 * 是否是andriod系统
+                 * @type {Boolean}
+                 * @marks zepto的Android判断好像有问题
+                 * eg: userAgent: Mozilla/4.0 (compatible;Android;320x480)
+                 */
+                //android : /(Android)\s+([\d.]+)/i.test(ua),
+                android : /(Android)(\s+([\d.]+))*/i.test(ua),
+                /**
+                 * @type {Boolean}
+                 */
+                ipad : /(iPad).*OS\s([\d_]+)/i.test(ua),
+                /**
+                 * @type {Boolean}
+                 */
+                webos : /(webOS|hpwOS)[\s\/]([\d.]+)/i.test(ua),
+                /**
+                 * @type {Boolean}
+                 */
+                kindle : /Kindle\/([\d.]+)/i.test(ua),
+                /** 
+                 * @type {Boolean}
+                 */
+                silk : /Silk\/([\d._]+)/i.test(ua),
+                /** 
+                 * @type {Boolean}
+                 */
+                blackberry : /(BlackBerry).*Version\/([\d.]+)/i.test(ua),
+                /** 
+                 * @type {Boolean}
+                 */
+                bb10 : /(BB10).*Version\/([\d.]+)/i.test(ua),
+                /** 
+                 * @type {Boolean}
+                 */
+                rimtabletos : /(RIM\sTablet\sOS)\s([\d.]+)/i.test(ua),
+                /** 
+                 * @type {Boolean}
+                 */
+                playbook : /PlayBook/i.test(ua),
+                /** 
+                 * 如果是chrome浏览器，返回浏览器当前版本号
+                 * @type {Number}
+                 */
+                chrome : /chrome\/(\d+\.\d+)/i.test(ua) ? + RegExp.$1 : undefined,
+                /**
+                 * 如果是firefox浏览器，返回浏览器当前版本号
+                 * @type {Number}
+                 */
+                firefox : /firefox\/(\d+\.\d+)/i.test(ua) ? + RegExp.$1 : undefined,
+                /**
+                 * 如果是ie返回ie当前版本号
+                 * @type {Number}
+                 */
+                ie : /msie (\d+\.\d+)/i.test(ua) ? (document.documentMode || + RegExp.$1) : undefined,
+                /**
+                 * @type {Boolean}
+                 */
+                isGecko : /gecko/i.test(ua) && !/like gecko/i.test(ua),
+                /**
+                 * @type {Boolean}
+                 */
+                isStrict : document.compatMode === "CSS1Compat",
+                /**
+                 * @type {Boolean}
+                 */
+                isWebkit : /webkit/i.test(ua),
+                /**
+                 * 如果是opera,返回opera当前版本号
+                 * @type {Number}
+                 */
+                opera : /opera(\/| )(\d+(\.\d+)?)(.+?(version\/(\d+(\.\d+)?)))?/i.test(ua) ?  + (RegExp.$6 || RegExp.$2) : undefined
+            };
+
+            /**
+             * @type {Boolean}
+             */
+            browser.iphone = !browser.ipad && /(iPhone\sOS)\s([\d_]+)/i.test(ua);
+            /**
+             * @type {Boolean}
+             */
+            browser.touchpad = browser.webos && /TouchPad/.test(ua);
+            /**
+             * @type {Boolean}
+             */
+            browser.tablet = !!(browser.ipad || browser.playbook || (browser.android && !/Mobile/.test(ua)) || (browser.firefox && /Tablet/.test(ua)));
+            /**
+             * @type {Boolean}
+             */
+            browser.phone  = !!(!browser.tablet && (browser.android || browser.iphone || browser.webos || browser.blackberry || browser.bb10 || (browser.chrome && /Android/.test(ua)) || (browser.chrome && /CriOS\/([\d.]+)/.test(ua)) || (browser.firefox && /Mobile/.test(ua))));
+
+            try {
+                if (/(\d+\.\d+)/.test(window.external.max_version)) {
+                    /**
+                     * 如果是遨游浏览器，返回遨游版本号
+                     * @type {Number}
+                     */
+                    browser.maxthon = + RegExp.$1;
+                }
+            } catch (e) {}
+
+            browser.mobile = browser.tablet || browser.phone || browser.touchpad;
+
+            /**
+             * 如果是safari浏览器，返回safari版本号
+             * @type {Number}
+             */
+            browser.safari = /(\d+\.\d)?(?:\.\d)?\s+safari\/?(\d+\.\d+)?/i.test(ua) && !/chrome/i.test(ua) ? + (RegExp.$1 || RegExp.$2) : undefined;
+            /**
+             * 是否支持position:fixed属性
+             * @type {Boolean}
+             */
+            browser.isSupportFixed = !browser.ie || browser.ie >= 7;
+
+            return browser;
+
+        })(navigator.userAgent);
+
+
+        /**
+         * @namespace sinaadToolkit.array
+         */
+        sinaadToolkit.array = sinaadToolkit.array || /** @lends sinaadToolkit.array */{
+            /**
+             * 移除数组元素
+             * @param  {Array} source 要移除元素的数组
+             * @param  {Any} match  要移除的元素
+             * @return {Array}        移除元素后的数组
+             */
+            remove : function (source, match) {
+                var len = source.length;
+                    
+                while (len--) {
+                    if (len in source && source[len] === match) {
+                        source.splice(len, 1);
+                    }
+                }
+                return source;
+            },
+            /**
+             * 遍历数组
+             * @param  {Array} source     要遍历的源数组
+             * @param  {Function} iterator   遍历方法
+             * @param  {Object} thisObject 调用对象
+             * @return {Array}            被遍历的源数组
+             */
+            each : function (source, iterator, thisObject) {
+
+                source = sinaadToolkit.array.ensureArray(source);
+
+                var returnValue,
+                    item,
+                    i,
+                    len = source.length;
+                
+                if ('function' === typeof iterator) {
+                    for (i = 0; i < len; i++) {
+                        item = source[i];
+                        //TODO
+                        //此处实现和标准不符合，标准中是这样说的：
+                        //If a thisObject parameter is provided to forEach, it will be used as the this for each invocation of the callback. If it is not provided, or is null, the global object associated with callback is used instead.
+                        returnValue = iterator.call(thisObject || source, item, i);
+                
+                        if (returnValue === false) {
+                            break;
+                        }
+                    }
+                }
+                return source;
+            },
+            /**
+             * 将传入元素转换成一个数组，如果是一个数组，直接返回，如果不是，判断是否为null或者undefined,如果不是，返回这个元素组成的数组，否则返回空数组
+             * @param  {Any} source 需要转换的对象
+             * @return {Array}      转换后的数组
+             */
+            ensureArray : function (source) {
+                return sinaadToolkit.isArray(source) ? source : sinaadToolkit.isNull(source) ? [] : [source];
+            }
+        };
+
+
+        /**
+         * @namespace sinaadToolkit.event
+         */
+        sinaadToolkit.event = sinaadToolkit.event || /** @lends sinaadToolkit.event */{
+            /**
+             * 注册事件
+             * @param  {HTMLNodeElement}   dom      事件监听节点
+             * @param  {String}   type     事件类型
+             * @param  {Function} callback 回调方法
+             */
+            on : function (dom, type, callback) {
+                if (dom.attachEvent) {
+                    dom.attachEvent('on' + type, callback);
+                } else if (dom.addEventListener) {
+                    dom.addEventListener(type, callback, false);
+                }
+            },
+            un : function (dom, type, callback) {
+                if (dom.detachEvent) {
+                    dom.detachEvent('on' + type, callback);
+                } else if (dom.removeEventListener) {
+                    dom.removeEventListener(type, callback);
+                }
+            }
+        };
+
+        /**
+         * @namespace sinaadToolkit.cookie
+         */
+        sinaadToolkit.cookie = sinaadToolkit.cookie || /** @lends sinaadToolkit.cookie */{
+            /**
+             * @private
+             * @param  {String} key 要验证的cookie的key
+             * @return {Boolean}    是否为符合规则的key
+             */
+            // http://www.w3.org/Protocols/rfc2109/rfc2109
+            // Syntax:  General
+            // The two state management headers, Set-Cookie and Cookie, have common
+            // syntactic properties involving attribute-value pairs.  The following
+            // grammar uses the notation, and tokens DIGIT (decimal digits) and
+            // token (informally, a sequence of non-special, non-white space
+            // characters) from the HTTP/1.1 specification [RFC 2068] to describe
+            // their syntax.
+            // av-pairs   = av-pair *(";" av-pair)
+            // av-pair    = attr ["=" value] ; optional value
+            // attr       = token
+            // value      = word
+            // word       = token | quoted-string
+             
+            // http://www.ietf.org/rfc/rfc2068.txt
+            // token      = 1*<any CHAR except CTLs or tspecials>
+            // CHAR       = <any US-ASCII character (octets 0 - 127)>
+            // CTL        = <any US-ASCII control character
+            //              (octets 0 - 31) and DEL (127)>
+            // tspecials  = "(" | ")" | "<" | ">" | "@"
+            //              | "," | ";" | ":" | "\" | <">
+            //              | "/" | "[" | "]" | "?" | "="
+            //              | "{" | "}" | SP | HT
+            // SP         = <US-ASCII SP, space (32)>
+            // HT         = <US-ASCII HT, horizontal-tab (9)>
+            _isValidKey : function (key) {
+                return (new RegExp("^[^\\x00-\\x20\\x7f\\(\\)<>@,;:\\\\\\\"\\[\\]\\?=\\{\\}\\/\\u0080-\\uffff]+\x24")).test(key);
+            },
+            /**
+             * 从cookie中获取key所对应的值
+             * @private
+             * @param  {String} key 要获取的cookie的key
+             * @return {String}     cookie对应该key的值
+             */
+            _getRaw : function (key) {
+                if (sinaadToolkit.cookie._isValidKey(key)) {
+                    var reg = new RegExp("(^| )" + key + "=([^;]*)(;|\x24)"),
+                        result = reg.exec(document.cookie);
+                         
+                    if (result) {
+                        return result[2] || null;
+                    }
+                }
+                return null;
+            },
+            /**
+             * 将cookie中key的值设置为value, 并带入一些参数
+             * @private
+             * @param  {String} key 要设置的cookie的key
+             * @param  {String} value 要设置的值
+             * @param  {Object} options 选项
+             */
+            _setRaw : function (key, value, options) {
+                if (!sinaadToolkit.cookie._isValidKey(key)) {
+                    return;
+                }
+                 
+                options = options || {};
+
+                // 计算cookie过期时间
+                var expires = options.expires;
+                if ('number' === typeof options.expires) {
+                    expires = new Date();
+                    expires.setTime(expires.getTime() + options.expires);
+                }
+                 
+                document.cookie =
+                    key + "=" + value +
+                    (options.path ? "; path=" + options.path : "") +
+                    (expires ? "; expires=" + expires.toGMTString() : "") +
+                    (options.domain ? "; domain=" + options.domain : "") +
+                    (options.secure ? "; secure" : '');
+
+            },
+            /**
+             * 获取cookie中key的值
+             * @param  {String} key 要获取的key
+             * @return {String}     cookie值
+             */
+            get : function (key) {
+                var value = sinaadToolkit.cookie._getRaw(key);
+                if ('string' === typeof value) {
+                    value = decodeURIComponent(value);
+                    return value;
+                }
+                return null;
+            },
+            /**
+             * 设置cookie值
+             * @param  {String} key     要设置的key
+             * @param  {String} value   要设置的value   
+             * @param  {object} options 选项
+             */
+            set : function (key, value, options) {
+                sinaadToolkit.cookie._setRaw(key, encodeURIComponent(value), options);
+            },
+            /**
+             * 移除key相关的cookie
+             * @param  {String} key     要移除的cookie的key
+             * @param  {Object} options 选项
+             */
+            remove : function (key, options) {
+                options = options || {};
+                options.expires = new Date(0);
+                sinaadToolkit.cookie._setRaw(key, '', options);
+            }
+        };
+
+        /**
+         * @namespace sinaadToolkit.storage
+         */
+        sinaadToolkit.storage = sinaadToolkit.storage || (function () {
+            //关闭浏览器后过期的key
+            var _sessionStorageMap = {};
+            //刷新浏览器清空没有设置expires的存储
+            sinaadToolkit.event.on(window, 'beforeunload', function () {
+                for (var key in _sessionStorageMap) {
+                    try {
+                        sinaadToolkit.storage.remove(key);
+                        delete _sessionStorageMap[key];
+                    } catch (e) {}
+                }
+            });
+
+            /**
+             * userData相关方法
+             */
+            var userData = {
+                id : 'sinaadToolkitUserDataContainer',
+                name : location.hostname,
+                init : function () {
+                    var dom = document.getElementById(userData.id);
+                    if (!dom) {
+                        try {
+                            dom = document.createElement('input');
+                            dom.type = "hidden";
+                            dom.style.display = "none";
+                            dom.addBehavior("#default#userData");
+                            document.body.insertBefore(dom, document.body.firstChild);
+                            var expires = new Date();
+                            expires.setDate(expires.getDate() + 365);
+                            dom.expires = expires.toUTCString();
+                        } catch (e) {
+                            sinaadToolkit.debug('sinaadToolkit.storage:userData init fail, ' + e.message);
+                            return null;
+                        }
+                    }
+                    return dom;
+                },
+                setItem : function (key, value, expires) {
+                    var dom = userData.init();
+                    if (dom) {
+                        dom.load(userData.name);
+                        dom.setAttribute(key, value + (expires ? ';expires=' + (sinaadToolkit.now() + expires) : ''));
+                        dom.save(userData.name);
+                    }
+                    if (!expires) {
+                        _sessionStorageMap[key] = 1;
+                    }
+                },
+                getItem : function (key) {
+                    var dom = userData.init();
+                    if (dom) {
+                        dom.load(userData.name);
+                        return dom.getAttribute(key);
+                    }
+                    return null;
+                },
+                removeItem : function (key) {
+                    var dom = userData.init();
+                    if (dom) {
+                        dom.load(userData.name);
+                        dom.removeAttribute(key);
+                        dom.save(userData.name);
+                    }
+                }
+            };
+
+            /**
+             * localstorage相关方法
+             */
+            var ls = {
+                getItem : function (key) {
+                    return window.localStorage.getItem(key);
+                },
+                setItem : function (key, value, expires) {
+                    window.localStorage.setItem(key, value + (expires ? ';expires=' + (sinaadToolkit.now() + expires) : ''));
+                    if (!expires) {
+                        _sessionStorageMap[key] = 1;
+                    }
+                },
+                removeItem : function (key) {
+                    window.localStorage.removeItem(key);
+                }
+            };
+
+            /**
+             * cookie相关方法
+             * @type {Object}
+             */
+            var cookie = {
+                getItem : function (key) {
+                    return sinaadToolkit.cookie.get(key);
+                },
+                setItem : function (key, value, expires) {
+                    sinaadToolkit.cookie.set(key, value, {expires : expires || 0});
+                },
+                removeItem : function (key) {
+                    sinaadToolkit.cookie.remove(key);
+                }
+            };
+
+            /** 
+             * 根据浏览器支持选择相关的存储方案
+             * 当ie且ie<8时使用userData方案，否则使用localStorage方案，否则使用cookie方案
+             * 隐私模式下storage会写入失败
+             */
+            var storage = window.localStorage ? ls : sinaadToolkit.browser.ie && sinaadToolkit.browser.ie < 8 ? userData : cookie;
+
+            /**
+             * 测试storage是否成功，隐私模式下localstorage会失败
+             */
+            try {
+                storage.setItem('sinaads_test_ls', 'support');
+            } catch (e) {
+                storage = cookie;
+            }
+
+            return /** @lends sinaadToolkit.storage */{
+                /**
+                 * 获取本地存储的key的值
+                 * @param  {String} key key
+                 * @return {String}     取得的值
+                 */
+                get : function (key) {
+                    try {
+                        var value = storage.getItem(key);
+                        if (value) {
+                            sinaadToolkit.debug('sinaadToolkit.storage.get:get value of ' + key + ':' + value);
+                            value = value.split(';expires=');
+                            //有过期时间
+                            if (value[1] && sinaadToolkit.now() > parseInt(value[1], 10)) {
+                                storage.removeItem(key);
+                                return null;
+                            } else {
+                                return value[0];
+                            }
+                        }
+                        return null;
+                    } catch (e) {
+                        sinaadToolkit.debug('sinaadToolkit.storage.get:' + e.message);
+                        return null;
+                    }
+                },
+                /**
+                 * 设置本地存储key的值为value
+                 * 注意：请不要设置非字符串格式形式的值到本地存储
+                 * @param  {String} key     设置的key
+                 * @param  {String} value   设置的value
+                 * @param  {Number} expires 过期时间毫秒数
+                 */
+                set : function (key, value, expires) {
+                    try {
+                        storage.setItem(key, value, expires);
+                    } catch (e) {
+                        sinaadToolkit.error('sinaadToolkit.storage.set:' + e.message);
+                    }
+                },
+                /**
+                 * 移除本地存储中key的值
+                 * @param  {String} key 要移除的key
+                 */
+                remove : function (key) {
+                    try {
+                        storage.removeItem(key);
+                    } catch (e) {
+                        sinaadToolkit.error('sinaadToolkit.storage.remove:' + e.message);
+                    }
+                }
+            };
+        })();
+
+
+        /* 测试移除没有设置过期时间的存储 */
+        // sinaadToolkit.storage.set('noexpireskey', 1);
+        // sinaadToolkit.storage.set('noexpireskey2', 2);
+
+        /**
+         * @namespace sinaadToolkit.url
+         */
+        sinaadToolkit.url = sinaadToolkit.url || /** @lends sinaadToolkit.url */{
+            protocol : (function() {
+                return (window.location.protocol === "https:" ? "https://" : "http://");
+            })(),
+            /**
+             * 确保传入的字符串是一个url, 同时去除前后空格
+             * iframe的src在ie下协议写错会导致刷新当前页面成iframe的src,
+             * 判断是否有http或者https开头，如果没有直接认定添加http或者https
+             * @todo \n\r 去除
+             */
+            ensureURL : function (source) {
+                source = sinaadToolkit.string.trim(source);
+                return source ? (/^(http|https):\/\//).test(source) ? source : (sinaadToolkit.url.protocol + source) : '';
+            },
+            /**
+             * 创建一个url
+             * @param  {String} domain url主域
+             * @param  {String} path   path
+             * @param  {Boolean} useSSL 使用https?
+             * @return {String}        生成的url
+             */
+            createURL : function (domain, path, useSSL) {
+                return [useSSL ? "https" : "http", "://", domain, path].join("");
+            },
+            /**
+             * 获取当前页面所在的主页面url
+             * @return {String} 获取当前页面所在的主页面url
+             */
+            top : (function () {
+                var top;
+                try {
+                    top = window.top.location.href;
+                } catch (e) {}
+                top = top || ((window.top === window.self) ?  window.location.href : window.document.referrer);
+                if (!top) {
+                    sinaadToolkit.error('sinaadToolkit:Cannot get pageurl on which ad locates.');
+                }
+                return top;
+            })()
+        };
+
+        /**
+         * @namespace sinaadToolkit.sio
+         */
+        sinaadToolkit.sio = sinaadToolkit.sio || (function () {
+            /**
+             * @private
+             * @param  {HTMLScriptElement} scr     script节点
+             * @param  {String} url     资源地址
+             * @param  {String} charset 字符集
+             */
+            function _createScriptTag(scr, url, charset) {
+                scr.setAttribute('type', 'text/javascript');
+                charset && scr.setAttribute('charset', charset);
+                scr.setAttribute('src', url);
+                document.getElementsByTagName('head')[0].appendChild(scr);
+            }
+            /**
+             * @private
+             * @param  {HTMLScriptElement} scr script节点
+             */
+            function _removeScriptTag(scr) {
+                if (scr && scr.parentNode) {
+                    scr.parentNode.removeChild(scr);
+                }
+                scr = null;
+            }
+            return /** @lends sinaadToolkit.sio */{
+                IMG_1_1 : 'http://d00.sina.com.cn/a.gif',
+                /**
+                 * 加载js模块
+                 * @param  {String} url          资源地址
+                 * @param  {Function} opt_callback 成功后回调方法
+                 * @param  {Object} opt_options  选项
+                 */
+                loadScript : function (url, optCallback, optOptions) {
+                    var scr = document.createElement("SCRIPT"),
+                        scriptLoaded = 0,
+                        options = optOptions || {},
+                        charset = options.charset || 'utf-8',
+                        callback = optCallback || function () {},
+                        timeOut = options.timeout || 0,
+                        timer;
+                    
+                    // IE和opera支持onreadystatechange
+                    // safari、chrome、opera支持onload
+                    scr.onload = scr.onreadystatechange = function () {
+                        // 避免opera下的多次调用
+                        if (scriptLoaded) {
+                            return;
+                        }
+                        
+                        var readyState = scr.readyState;
+                        if ('undefined' === typeof readyState ||
+                             readyState === "loaded" ||
+                             readyState === "complete") {
+                            scriptLoaded = 1;
+                            try {
+                                callback();
+                                clearTimeout(timer);
+                            } finally {
+                                scr.onload = scr.onreadystatechange = null;
+                                _removeScriptTag(scr);
+                            }
+                        }
+                    };
+
+                    if (timeOut) {
+                        timer = setTimeout(function () {
+                            scr.onload = scr.onreadystatechange = null;
+                            _removeScriptTag(scr);
+                            options.onfailure && options.onfailure();
+                        }, timeOut);
+                    }
+                    
+                    _createScriptTag(scr, url, charset);
+                },
+                /**
+                 * jsonp方式回调
+                 * @param  {String}   url         资源地址
+                 * @param  {Function} callback    回调方法
+                 * @param  {Object}   opt_options 选项
+                 */
+                jsonp : function (url, callback, optOptions) {
+                    var scr = document.createElement('SCRIPT'),
+                        prefix = '_sinaads_cbs_',
+                        callbackName,
+                        // callbackImpl,
+                        options = optOptions || {},
+                        charset = options.charset || 'utf-8',
+                        queryField = options.queryField || 'callback',
+                        timeOut = options.timeout || 0,
+                        timer,
+                        reg = new RegExp('(\\?|&)' + queryField + '=([^&]*)'),
+                        matches;
+
+                    function getCallBack(onTimeOut) {
+                         
+                        return function () {
+                            try {
+                                if (onTimeOut) {
+                                    options.onfailure && options.onfailure();
+                                } else {
+                                    callback.apply(window, arguments);
+                                    clearTimeout(timer);
+                                }
+                                window[callbackName] = null;
+                                delete window[callbackName];
+                            } catch (e) {
+                                // ignore the exception
+                            } finally {
+                                _removeScriptTag(scr);
+                            }
+                        };
+                    }
+             
+                    if (sinaadToolkit.isFunction(callback)) {
+                        callbackName = prefix + Math.floor(Math.random() * 2147483648).toString(36);
+                        window[callbackName] = getCallBack(0);
+                    } else if (sinaadToolkit.isString(callback)) {
+                        // 如果callback是一个字符串的话，就需要保证url是唯一的，不要去改变它
+                        // TODO 当调用了callback之后，无法删除动态创建的script标签
+                        callbackName = callback;
+                    } else {
+                        if ((matches = reg.exec(url))) {
+                            callbackName = matches[2];
+                        }
+                    }
+             
+                    if (timeOut) {
+                        timer = setTimeout(getCallBack(1), timeOut);
+                    }
+             
+                    //如果用户在URL中已有callback，用参数传入的callback替换之
+                    url = url.replace(reg, '\x241' + queryField + '=' + callbackName);
+                     
+                    if (url.search(reg) < 0) {
+                        url += (url.indexOf('?') < 0 ? '?' : '&') + queryField + '=' + callbackName;
+                    }
+                    _createScriptTag(scr, url, charset);
+                },
+                /**
+                 * 日志方法
+                 * @param  {String} url 发送日志地址
+                 */
+                log : function (url, useCache) {
+                    var img = new Image(),
+                        key = '_sinaads_sio_log_' + sinaadToolkit.rnd();
+
+                    window[key] = img;
+                 
+                    img.onload = img.onerror = img.onabort = function () {
+                        img.onload = img.onerror = img.onabort = null;
+                 
+                        window[key] = null;
+                        img = null;
+                    };
+             
+                    img.src = url + (useCache ? '' : (url.indexOf('?') > 0 ? '&' : '?') + key);
+                }
+            };
+        })();
+    })(window);
+
+    /**
+     * cookie mapping
+     */
+    function _cookiemapping(store) {
+        var _sinaglobal = sinaadToolkit.cookie.get('SINAGLOBAL');
+        if (!sinaadToolkit.isNull(_sinaglobal)) {
+            //生成唯一hash值
+            var _sinaglobal_hash = sinaadToolkit.hash(_sinaglobal);
+            var _sinaads_ls = store.get('sinaads_ck_ls');
+            if (!sinaadToolkit.isNull(_sinaads_ls)) {
+                if (_sinaads_ls.indexOf(_sinaglobal_hash) !== -1) {
+                    var source = _sinaads_ls.split("|");
+                    var item,
+                        i = 0;
+
+                    while (item = source[i++]) {
+                        if (item && item.indexOf(_sinaglobal_hash) !== -1) {
+                            var value = item.split(':exp=');
+                            //有过期时间
+                            if (value[1] && sinaadToolkit.now() > parseInt(value[1], 10)) {
+                                source.splice(i - 1, 1);
+
+                                var v = _sinaglobal_hash + ':exp=' + (sinaadToolkit.now() + 1000 * 60 * 60 * 24) + '|' + source.join("|");
+                                _request(v);
+                            }
+                        }
+                    }
+                } else { //存在本地存储(sinaads_ck_ls)，但不存在当前用户信息则直接发送日志并存储
+                    var v = _sinaglobal_hash + ':exp=' + (sinaadToolkit.now() + 1000 * 60 * 60 * 24) + "|" + _sinaads_ls;
+                    _request(v);
+                }
+            } else { //不存在本地存储(sinaads_ck_ls),则直接发送日志并存储
+                var v = _sinaglobal_hash + ':exp=' + (sinaadToolkit.now() + 1000 * 60 * 60 * 24) + "|";
+                _request(v);
+            }
+        }
+
+        function _request(value) {
+            var host = "unknow",
+                url = sinaadToolkit.url.top,
+                durl = /^(http|https):\/\/([^\/]+)\/?/i;
+            try {
+                host = url.match(durl)[2];
+            } catch (e) {}
+
+            sinaadToolkit.sio.jsonp('http://r.dmp.sina.com.cn/cm/list?sinaglobal=' + _sinaglobal + '&host=' + host, function(data) {
+                if (data && data.status === 0) {
+                    sinaadToolkit.array.each(data.data, function(url) {
+                        url && sinaadToolkit.sio.log(url, 1);
+                    });
+
+                    store.set('sinaads_ck_ls', value);
+                }
+            }, {
+                onfailure: function() {
+                    sinaadToolkit.error('timeOut');
+                }
+            });
+        }
+    };
+
+    var XDomainStorage = window.___SinaadsCrossDomainStorage___;
+    XDomainStorage.ready(function(store) {
+        if (store) {
+            _cookiemapping(store);
+        }
+    });
+  </script>
+
+</body></html>

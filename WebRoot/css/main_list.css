@@ -1,0 +1,57 @@
+.h4-title {
+    padding: 0 15px;
+    font-size: 16px;
+    color: #000000;
+    height: 38px;
+    line-height: 38px;
+    border-bottom: 1px solid #dfdfdf;
+}
+.edit-a{
+	display: inline-block;
+    color: #f8700d;
+    font-size: 14px;
+    margin-left:20px;
+    margin-top:15px;
+}
+.icon-edite{
+	width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 5px;
+    margin-top: 13px;
+    background: url("images/icon-edite.png") no-repeat;
+}
+.save-btn{
+	width: 64px;
+    height: 30px;
+    line-height: 30px;
+    background: #f6710c;
+    text-align: center;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 3px;
+    float:right;
+    display: block;
+    margin-top:15px;
+    margin-right:20px;
+    text-decoration: none;
+}
+.icon-add-orange {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    background: url("images/icon-add-orange.png");
+    margin-top: 15px;
+    margin-left:5px;
+}
+.icon-deleta-orange {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    background: url("images/icon-delete-orange.png") no-repeat;
+    margin-top: 15px;
+    margin-left:5px;
+}
