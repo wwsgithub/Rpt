@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ <mapper namespace="com.fin.dao.DataDetailDAO">
+ 	<select id="queryByMonth" parameterType="map" resultType="com.fin.entity.DataDetailModel">
+ 		<![CDATA[
+			select sum(t.budget) budget,sum(t.finance_refer) finance_refer,sum(t.personal_refer) personal_refer,d.deptname,d.empname,d.deptno
+			from 
+				dept d 
+			LEFT JOIN item i on i.deptno = d.id
+			LEFT JOIN datadetail t on t.itemno = i.itemno and date_format(t.recordtime,'%Y-%m') = #{date} 
+			GROUP BY
+				d.deptno,d.deptname,d.empname
+			order by
+				d.deptno asc
+ 		]]>
+ 	</select>
+ 	
+ 	<select id="getByDeptnoAndMonth" parameterType="map" resultType="com.fin.entity.DataDetailModel">
+ 		<![CDATA[
+ 			select sum(t.budget) budget,sum(t.finance_refer) finance_refer,sum(t.personal_refer) personal_refer,i.itemname
+			from item i left join datadetail t 
+				on t.itemno = i.itemno
+				and DATE_FORMAT(t.recordtime,'%Y-%m') = #{date}
+			where
+				i.deptno = #{deptno}
+			GROUP BY
+				i.itemname
+			ORDER BY
+				i.itemno
+ 		]]>
+ 	</select>
+ 	
+ 	<select id="queryByYear" parameterType="map" resultType="com.fin.entity.DataDetailModel">
+ 		<![CDATA[
+ 			select DATE_FORMAT(t.recordtime,'%Y-%m') recordtimestring,sum(t.budget) budget,sum(t.finance_refer) finance_refer,sum(t.personal_refer) personal_refer
+			from datadetail t
+			where
+				DATE_FORMAT(t.recordtime,'%Y') = #{date}
+			GROUP BY
+				DATE_FORMAT(t.recordtime,'%Y-%m')
+			ORDER BY
+				DATE_FORMAT(t.recordtime,'%Y-%m')
+ 		]]>
+ 	</select>
+ 	
+ 	<select id="getByDeptnoAndDate" parameterType="map" resultType="com.fin.entity.DataDetailModel">
+ 		<![CDATA[
+ 			select i.itemname,i.itemno,t.budget,t.finance_refer,t.personal_refer
+			from item i LEFT JOIN datadetail t on i.itemno = t.itemno 
+				and DATE_FORMAT(t.recordtime,'%Y-%m') = #{date} and i.deptno = t.deptno
+			where i.deptno = #{deptno}
+ 		]]>
+ 	</select>
+ 	
+ 	<select id="getByItemnoAndDate" parameterType="com.fin.entity.DataDetailModel" resultType="com.fin.entity.DataDetailModel">
+ 		<![CDATA[
+ 			select * from datadetail
+ 			where deptno = #{deptno} and itemno = #{itemno} and DATE_FORMAT(recordtime,'%Y-%m-%d') = #{recordtimestring} 
+ 		]]>
+ 	</select>
+ 	
+ 	<insert id="insert" parameterType="com.fin.entity.DataDetailModel">
+ 		<![CDATA[
+ 			insert into datadetail(itemno,deptno,budget,finance_refer,personal_refer,recordtime)
+ 			 value(#{itemno},#{deptno},#{budget},#{finance_refer},#{personal_refer},str_to_date(#{recordtimestring},'%Y-%m-%e'))
+ 		]]>
+ 	</insert>
+ 	
+ 	<update id="update" parameterType="com.fin.entity.DataDetailModel">
+ 		<![CDATA[
+ 			update datadetail set budget = #{budget},finance_refer = #{finance_refer},personal_refer = #{personal_refer}
+ 			 where deptno = #{deptno} and itemno = #{itemno} and DATE_FORMAT(recordtime,'%Y-%m-%d') = #{recordtimestring} 
+ 		]]>
+ 	</update>
+ </mapper>

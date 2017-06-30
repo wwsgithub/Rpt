@@ -1,0 +1,30 @@
+/*冗余样式，检测样式是否成功加载,不允许修改*/
+.outlogin_layerbox_bylx .outlogin_checkload{width:123px;}
+
+/*可被定制样式*/
+.outlogin_layerbox_bylx{border-color:#b9cdf0;color:#434343;box-shadow:4px 4px 0 rgba(0,0,0,.1);background-color:#e5eff8;}
+.outlogin_layerbox_bylx a.layerbox_close{color:#999;}
+.outlogin_layerbox_bylx a.layerbox_close:hover{color:#3f7bc1;}
+.outlogin_layerbox_bylx .close_loginname{color:#999;}
+.outlogin_layerbox_bylx .close_loginname:hover{color:#3f7bc1;}
+.outlogin_layerbox_bylx .layerbox_left{border-right-color:#fff;background:#fff;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist li input.styles{border-color:#d0d0d0;background:#FFF;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist li.loginform_yzm .disability_voice{background:url(http://i.sso.sina.com.cn/images/login/voice.gif) no-repeat 50% 50%;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.login_btn,
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.register_btn{background:#3f7bc1;color:#fff;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.login_btn:hover,
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.register_btn:hover{background-color:#085bbb;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.register_lnk{color:#3f7bc1;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.register_lnk:hover{color:#3f7bc1;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.forget_Pwd{color:#3f7bc1;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist a.forget_Pwd:hover{color:#3f7bc1;}
+.outlogin_layerbox_bylx .layerbox_right .regist_btn{background:url(http://i.sso.sina.com.cn/images/login/reg_arrow.gif) no-repeat 70px 8px #3f7bc1;color:#fff;}
+.outlogin_layerbox_bylx .layerbox_right .regist_btn:hover{background-color:#085bbb;}
+.outlogin_layerbox_bylx .association{border-color:#ddd;background:#fff;}
+.outlogin_layerbox_bylx .association li.note_item{color:#999;}
+.outlogin_layerbox_bylx .association li a{color:#999;}
+.outlogin_layerbox_bylx .association li.current{background:#f4f5f7;}
+.outlogin_layerbox_bylx .login_error_tips{color:#DA0000; }
+.outlogin_LoginBtn .LoginIcon{background:url(http://i.sso.sina.com.cn/images/login/loginButton_16a.png) no-repeat 0 0;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist  li.loginform_yzm .reload-code{background:url(http://i.sso.sina.com.cn/images/login/verify_refresh.png) no-repeat 0 0;}
+.outlogin_layerbox_bylx .layerbox_left ul.loginformlist  li.loginform_yzm .reload-code:hover{background-position:0 -18px;}

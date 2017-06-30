@@ -1,0 +1,53 @@
+.main_item {
+	width: 90%;
+	background: #E5E9EA;
+	border: 1px solid #d3d6d7;
+	border-radius: 8px;
+	min-height: 100px;
+	margin-top: 20px;
+}
+
+#itemlists li:hover {
+	color: blue;
+}
+
+.h {
+	display: none;
+}
+
+.s {
+	display: block;
+}
+
+#dept_ul li {
+	display: inline;
+}
+
+#dept_ul li a {
+	display: inline-block;
+	padding: 0 15px;
+	height: 30px;
+	line-height: 30px;
+	color: #A94A87;
+	font-family: "\5FAE\8F6F\96C5\9ED1";
+	font-size: 16px;
+	border-radius: 10px;
+}
+
+#dept_ul li a:hover {
+	cursor: pointer;
+	color: blue;
+}
+
+.input-text {
+	background: #ffffff;
+	border: 1px solid #c9c9c9;
+	height: 25px;
+	width: 100px;
+	padding-left: 5px;
+	border-radius: 5px;
+}
+
+td {
+	padding: 6px 5px 6px 0;
+}

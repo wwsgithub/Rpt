@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ <mapper namespace="com.fin.dao.ItemDAO">
+ 	<select id="findAll" resultType="com.fin.entity.Item">
+ 		select * from item
+ 	</select>
+ 	
+ 	<select id="getByDeptno" resultType="com.fin.entity.Item" parameterType="string">
+ 		<![CDATA[
+ 			select * from item where deptno = #{deptno}
+ 		]]>
+ 	</select>
+ 	
+ 	<select id="getByItemno" resultType="com.fin.entity.Item" parameterType="string">
+ 		<![CDATA[
+ 			select * from item where itemno = #{itemno}
+ 		]]>
+ 	</select>
+ 	
+ 	<update id="modify" parameterType="com.fin.entity.Item">
+ 		<![CDATA[
+ 			UPDATE ITEM SET ITEMNAME = #{itemname} , COSTTYPE = #{costtype} WHERE ITEMNO = #{itemno}
+ 		]]>
+ 	</update>
+ 	
+ 	<insert id="save" parameterType="com.fin.entity.Item">
+ 		<![CDATA[
+ 			insert into item(itemno,itemname,deptno,costtype) values(#{itemno},#{itemname},#{deptno},#{costtype})
+ 		]]>
+ 	</insert>
+ 	
+ 	<delete id="remove" parameterType="com.fin.entity.Item">
+ 		<![CDATA[
+ 			delete from item where itemno = #{itemno}
+ 		]]>
+ 	</delete>
+ </mapper>

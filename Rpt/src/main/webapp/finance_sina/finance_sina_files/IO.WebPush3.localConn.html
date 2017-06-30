@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!-- saved from url=(0063)http://woocall.sina.com.cn/lib/iframe/IO.WebPush3.localConn.htm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=GBK">
+	
+	<title>IO.WebPush3 localConn</title>
+</head>
+<body>
+	<script type="text/javascript">
+		function sendMessage(message)
+		{
+			parent.postMessage(message,'*');
+		}
+
+		function LocalConn(key,id)
+		{
+			/*storage键，有相同key值的对象们都在监控同一个连接*/
+			this.key = key;
+			this.storageDataKey = this.storageDataPre + this.key;
+			this.storageMasterKey = this.storageMasterPre + this.key;
+			/*与父页面的LocalConn通信时的一一对应键*/
+			this.id = id;
+			this.messagedData = {};
+
+			var _this = this;
+			/*监听storage变化*/
+			addEvent(window,'storage',fnBind(this.storageListener,this));
+			/*监控父页面指令*/
+			addEvent(window,'message',fnBind(this.messageListener,this));
+			/*页面关闭时把自己的主清空*/
+			addEvent(window,'unload',fnBind(this.unload,this));
+
+			/*不是主的话先取一次当前的数据*/
+			if(!this.checkMaster())
+			{
+				this.onmessage(localStorage.getItem(this.storageDataKey));
+			}
+			/*定时刷主标志*/
+			setInterval(fnBind(this.checkMaster,this),this.interval);
+
+			var _arr = this.constructor.prototype.parentListeners[this.key];
+			if(!_arr)
+			{
+				_arr = this.constructor.prototype.parentListeners[this.key] = [];
+			}
+			_arr.push(this);
+		};
+		merge(LocalConn.prototype,
+			{
+				storageMasterPre: 'IO_WEBPUSH3_localConnMaster_',
+				storageDataPre: 'IO_WEBPUSH3_localConnData_',
+				/*12秒失效，10秒刷一次*/
+				lifetime: 12 * 1000,
+				interval: 10 * 1000,
+				parentListeners: {},
+				messageID: 0,
+				messageListener: function(ev)
+				{
+					/*不是发给自己的指令不管*/
+					if(ev.data.indexOf(this.id + ':') == -1)
+					{
+						return;
+					}
+					var _cmd,_data;
+					ev.data.replace(/([^:]+):([\s\S]*)/,function()
+					{
+						_cmd = arguments[1];
+						_data = arguments[2];
+					});
+					switch(_cmd)
+					{
+						/*发送过来了数据*/
+						case 'IO_LOCALCONN_SEND_' + this.id:
+							this.send(_data);
+							break;
+						case 'IO_LOCALCONN_CLOSE_' + this.id:
+							this.close();
+							break;
+					}
+				},
+				tryBeMasterTimer: undefined,
+				storageListener: function(ev)
+				{
+					/*不是自己需要监听的key不处理*/
+					if(ev.key.indexOf(this.key) == -1)
+					{
+						return;
+					}
+					switch(ev.key)
+					{
+						/*监控主标志变化*/
+						case this.storageMasterKey:
+							clearTimeout(this.tryBeMasterTimer);
+							/*被置空了说明之前的主退了，尝试自己当主*/
+							if(!ev.newValue)
+							{
+								var _delay = Math.floor(Math.random() * 40) * 10;
+								this.tryBeMasterTimer = setTimeout(fnBind(this.checkMaster,this),_delay);
+							}
+							break;
+							/*监控数据变化*/
+						case this.storageDataKey:
+							this.onmessage(ev.newValue);
+							break;
+					}
+				},
+				checkMaster: function()
+				{
+					var _key = this.storageMasterKey;
+					var _now = new Date().getTime();
+					var _masterID = localStorage.getItem(_key);
+					if(!_masterID || _now - _masterID.split(',')[1] > this.lifetime)
+					{
+						var _this = this;
+						setTimeout(function()
+						{
+							(localStorage.getItem(_this.storageMasterKey) || '').split(',')[0] == _this.id
+							{
+								_this.onchange('master');
+							}
+						},500);
+
+						_this.setMeMaster();
+						return true;
+					}
+					else
+						/*刷新master标记*/
+						if(_masterID.split(',')[0] == this.id)
+						{
+							this.setMeMaster();
+							return true;
+						}
+					return false;
+				},
+				unload: function()
+				{
+					var _masterID = localStorage.getItem(this.storageMasterKey) || '';
+					if(_masterID.split(',')[0] == this.id)
+					{
+						this.clearMyMaster();
+					}
+				},
+				clearMyMaster: function()
+				{
+					localStorage.removeItem(this.storageMasterKey);
+				},
+				setMeMaster: function()
+				{
+					try{
+						localStorage.setItem(this.storageMasterKey,[this.id,new Date().getTime()].join(','));
+					}
+					catch(e)
+					{
+						localStorage.removeItem(this.storageMasterKey);
+						localStorage.setItem(this.storageMasterKey,[this.id,new Date().getTime()].join(','));
+					}
+				},
+				onchange: function(cmd)
+				{
+					if(cmd == 'master')
+					{
+						/*通知父页*/
+						sendMessage(['IO_LOCALCONN_ONCHANGE_',this.id,':',cmd].join(''));
+					}
+				},
+				hasOnmessaged: false,
+				onmessage: function(data)
+				{
+					var _id;
+					data = data.replace(/^(\d+)-/,function($1,$2)
+					{
+						_id = $2;
+						return '';
+					});
+					if(this.messagedData[_id] !== data)
+					{
+						sendMessage(['IO_LOCALCONN_ONMESSAGE_',this.id,':',data].join(''));
+						this.messagedData[_id] = data;
+						var _this = this;
+						setTimeout(function()
+						{
+							delete _this.messagedData[_id];
+						},1000);
+					}
+					this.hasOnmessaged = true;
+				},
+				send: function(data)
+				{
+					if(!data)
+					{
+						return;
+					}
+					this.constructor.prototype.messageID++;
+					data = this.messageID + '-' + data;
+					/*如果新数据和老的一样，那么不广播*/
+					if(localStorage.getItem(this.storageDataKey) === data)
+					{
+						/*如果是第一次接收数据，也就是说页面打开就做了主，需要告诉自己*/
+						if(!this.hasOnmessaged)
+						{
+							this.onmessage(data);
+						}
+						return;
+					}
+					try{
+						localStorage.setItem(this.storageDataKey,data);
+					}
+					catch(e)
+					{
+						localStorage.removeItem(this.storageDataKey);
+						localStorage.setItem(this.storageDataKey,data);
+					}
+					for(var i = 0,l = this.constructor.prototype.parentListeners[this.key].length;i < l;i++)
+					{
+						this.constructor.prototype.parentListeners[this.key][i].onmessage(data);
+					}
+				},
+				close: function()
+				{
+					clearInterval(this.tryBeMasterTimer);
+					this.unload();
+					for(var i = this.constructor.prototype.parentListeners[this.key].length - 1;i >= 0;i--)
+					{
+						if(this.constructor.prototype.parentListeners[this.key][i].id == this.id)
+						{
+							this.constructor.prototype.parentListeners[this.key].splice(i,1);
+						}
+					}
+				}
+			});
+		addEvent(window,'message',function(ev)
+		{
+			ev.data.replace(/newLocalConn\(([^\,]+)\,([^\,]+)\)/,function()
+			{
+				new LocalConn(arguments[1],arguments[2]);
+			});
+		});
+		sendMessage('M OK now!','*');
+
+		/*argDestination：要合并进到的对象*/
+		/*argOrigin：新加的对象*/
+		/*merge(a,b)：以a做基础，将b的属性拷进来*/
+		function merge(argDestination,argOrigin)
+		{
+			for(var p in argOrigin)
+			{
+				if(typeof argDestination[p] == 'object' && typeof argOrigin[p] == 'object')
+				{
+					argDestination[p] = arguments.callee(argOrigin[p],argDestination[p]);
+				}
+				else
+				{
+					argDestination[p] = argOrigin[p];
+				}
+			}
+			return argDestination;
+		}
+		/*全绑定*/
+		function fnBind(fn,argObj,args)
+		{
+			return function()
+			{
+				if(args && arguments.length)
+				{
+					var _args = Array.prototype.slice.call(args,0);
+					for(var i = 0;i < arguments.length;i++)
+					{
+						Array.prototype.push.call(_args,arguments[i]);
+					}
+				}
+				return fn.apply(argObj || this,_args || args || arguments);
+			}
+		}
+		/*只绑参数*/
+		function bindArg(fn)
+		{
+			return fnBind(fn,null,Array.prototype.slice.call(arguments,1));
+		}
+		function addEvent(obj,type,call)
+		{
+			if(obj.addEventListener)
+			{
+				obj.addEventListener(type,call,false);
+			}
+			else
+			{
+				obj.attachEvent('on' + type,call);
+			}
+		}
+	</script>
+
+</body></html>

@@ -1,0 +1,367 @@
+.page-content{
+    border-top:2px solid #77b0ec;
+    padding: 15px;
+}
+.mod-box{
+    background: #f7f8fc;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+.mod-box .mod-title{
+    padding: 0 15px;
+    height: 38px;
+    line-height: 38px;
+    font-size: 16px;
+    color: #1269c7;
+    border-bottom: 1px solid #4a95e6;
+}
+.mod-box .mod-title .more-a{
+    float: right;
+    color: #999999;
+    font-size: 12px;
+}
+.mod-box .mod-title .icon-human,
+.mod-box .mod-title .icon-appraisal,
+.mod-box .mod-title .icon-medical-institution,
+.mod-box .mod-title .icon-notice,
+.mod-box .mod-title .icon-todo{
+    margin-top: -3px;
+    margin-right: 8px;
+    display: inline-block;
+    width: 21px;
+    height: 21px;
+    vertical-align: middle;
+}
+
+.mod-box .mod-title .icon-human{
+    width: 24px;
+}
+/* .icon-notice{
+    background: url("../images/icon-notice.png") no-repeat center;
+}
+
+.icon-todo{
+    background: url("../images/icon-todo.png") no-repeat center;
+}
+
+.icon-human{
+
+    background: url("../images/icon-human.png") no-repeat center;
+}
+.icon-appraisal{
+    background: url("../images/icon-appraisal.png") no-repeat center;
+}
+.icon-medical-institution{
+    background: url("../images/icon-medical-institution.png") no-repeat center;
+} */
+
+
+.notice-list{
+    padding-top: 5px;
+}
+.notice-list li.list{
+    padding: 0 15px;
+    border-bottom: 1px dashed #dddddd;
+}
+.notice-list li.list .list-div{
+    height: 34px;
+    line-height: 34px;
+}
+.notice-list li.list .p-text{
+    clear: both;
+    color: #333333;
+    font-size: 12px;
+
+    line-height: 20px;
+    padding-bottom: 10px;
+    padding-left: 12px;
+    /* background: url("../images/p-text-bg.jpg") no-repeat 0px 9px; */
+}
+.notice-list li.list .p-text a{
+    color: #333333;
+}
+.notice-list li.list .list-div .name{
+    float: left;
+    font-size: 12px;
+    color: #000000;
+    display: inline;
+    font-weight: bold;
+}
+.notice-list li.list .list-div .right-tool{
+    display: inline;
+    float: right;
+    width: 178px;
+}
+.notice-list li.list .span-time{
+    font-size: 12px;
+    color: #999999;
+    margin-right: 20px;
+}
+.notice-list li.list .down-file{
+    border: 1px solid #a0d5bc;
+    color: #666666;
+    font-size: 12px;
+    background: #fff;
+    padding: 3px 10px;
+    border-radius: 10px;
+    line-height: 18px;
+}
+.icon-down-file{
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+    margin-right: 5px;
+    margin-top: -3px;
+    background: url("../images/icon-down-file.png") no-repeat;
+}
+
+.mod-todo-box{
+    margin: 10px 8px 0 8px;
+    padding-bottom: 20px;
+}
+.mod-todo-box .list{
+    float: left;
+    width: 25%;
+}
+
+.todo-list{
+    background: #fff;
+    border-radius: 5px;
+    padding:25px 15px;
+    margin: 0 10px;
+}
+.todo-list .name-box{
+    height: 54px;
+    width: 140px;
+    margin: 0 auto 25px auto;
+}
+.todo-list .name-box .icon-todo{
+    float: left;
+}
+.todo-list .name-box .right-text{
+    float: left;
+    display: inline;
+    margin-left: 20px;
+}
+.todo-list .name-box .right-text .p1{
+    color: #666666;
+    font-size: 14px;
+    line-height: 20px;
+    padding-top: 4px;
+}
+.todo-list .name-box .right-text .p2{
+    color: #666666;
+    font-size: 22px;
+}
+.todo-list .p-number{
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+.todo-list .p-number strong{
+    color: #333333;
+    font-size: 24px;
+}
+.todo-list .go-todo-btn{
+    display: block;
+    margin: 0 auto;
+    width: 64px;
+    height: 30px;
+    line-height: 30px;
+    background: #00c484;
+    color: #fff;
+    text-align: center;
+    font-size: 14px;
+    border-radius: 3px;
+}
+.todo-list .go-todo-btn:hover{
+    text-decoration: none;
+    background: #0bd392;
+}
+
+.icon-todo-dsh,
+.icon-todo-wtg,
+.icon-todo-ysh,
+.icon-todo-ytg{
+    display: inline-block;
+    width: 54px;
+    height: 54px;
+    vertical-align: middle;
+}
+.icon-todo-dsh{
+    background: url("../images/icon-todo-dsh.png") no-repeat;
+}
+.icon-todo-wtg{
+    background: url("../images/icon-todo-wtg.png") no-repeat;
+}
+.icon-todo-ysh{
+    background: url("../images/icon-todo-ysh.png") no-repeat;
+}
+.icon-todo-ytg{
+    background: url("../images/icon-todo-ytg.png") no-repeat;
+}
+
+/*******************领导桌面*********************/
+
+.page-desk{
+    padding: 30px 30px;
+}
+
+.page-desk .mod-box .mod-title .more-a{
+    color: #1269c7;
+}
+.page-desk .wd-g{
+    margin-left: -8px;
+    margin-right: -8px;
+
+}
+.page-desk .wd-g .mod-box{
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 20px;
+}
+.page-desk .notice-list{
+   height: 225px;
+}
+
+.page-desk .notice-list li.list .p-text{
+    height: 40px;
+    overflow: hidden;
+}
+/*全省医疗机构数据统计*/
+.medical-institution-box{
+    position: relative;
+    padding: 15px 15px 15px 180px;
+    position: relative;
+}
+.medical-institution-box .number-statistic-box{
+    position: absolute;
+    left: 0;
+    top:15px;
+}
+.medical-institution-box .chart-box{
+    position: relative;
+    height: 199px;
+    background: #fff;
+    border-radius: 5px;
+}
+.medical-institution-box .chart-box .unit{
+    position: absolute;
+    right: 15px;
+    top: 32px;
+    font-size: 16px;
+    color: #999999;
+}
+.number-statistic-box{
+    width: 155px;
+}
+.number-statistic-box .p-time{
+    text-align: center;
+    font-size: 12px;
+    color: #999999;
+    line-height: 20px;
+    margin-bottom: 8px;
+
+}
+.number-statistic-box .number{
+    display: block;
+    width: 120px;
+    height: 100px;
+    margin: 0 auto;
+    text-align: center;
+    color: #fff;
+    font-size: 14px;
+    font-style: normal;
+    padding-top: 20px;
+}
+.number-statistic-box .number strong{
+    font-size: 24px;
+    font-weight: normal;
+}
+.number-statistic-box .number.round-01{
+    background: url("../images/medical-institution-number.png") no-repeat;
+}
+.number-statistic-box .number.round-02{
+    background: url("../images/human-round-number.png") no-repeat;
+}
+.number-statistic-box .p-name{
+    padding-top: 10px;
+    font-size: 16px;
+    color: #000000;
+    text-align: center;
+    line-height: 30px;
+}
+
+/*人力资源管理统计*/
+.human-box{
+    position: relative;
+    padding: 15px 15px 10px 145px;
+    height: 210px;
+}
+.human-box .number-statistic-box{
+    position: absolute;
+    left: 0;
+    top:15px;
+}
+.human-box .chart-box{
+    height: 210px;
+}
+.human-box .chart-box .chart-01,
+.human-box .chart-box .chart-02{
+    position: relative;
+    float: left;
+    width: 50%;
+    *width:49.97%;
+    height: 100%;
+    /*background: #fff;*/
+}
+.human-box .chart-box .chart-02 .unit{
+    position: absolute;
+    right: 2px;
+    top: -7px;
+    font-size: 12px;
+    color: #999999;
+}
+
+/*绩效考核*/
+.appraisal-list{
+    padding-bottom: 45px;
+}
+.appraisal-list li{
+    position: relative;
+    height: 50px;
+    padding: 45px 30px 0 95px;
+}
+.icon-round-people-01,
+.icon-round-people-02{
+    position: absolute;
+    left: 30px;
+    top:43px;
+    display: block;
+    width: 50px;
+    height: 50px;
+
+}
+.icon-round-people-01{
+    background: url("../images/icon-round-people-01.png") no-repeat;
+}
+.icon-round-people-02{
+    background: url("../images/icon-round-people-02.png") no-repeat;
+}
+.appraisal-list li .p1{
+    color: #000000;
+    font-size: 16px;
+}
+.appraisal-list li .p2{
+    font-size: 14px;
+    color: #666666;
+    text-align: right;
+    width: 145px;
+}
+.appraisal-list li .p2 strong{
+    text-align: right;
+    font-size: 22px;
+    color: #000000;
+}

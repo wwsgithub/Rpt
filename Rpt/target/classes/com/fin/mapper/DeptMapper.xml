@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ <mapper namespace="com.fin.dao.DeptDAO">
+ 	<select id="findAll" resultType="com.fin.entity.Dept">
+ 		select * from dept order by id
+ 	</select>
+ 	
+ 	<select id="findByDeptno" resultType="com.fin.entity.Dept" parameterType="com.fin.entity.Dept">
+ 		select * from dept t where t.deptno = ${deptno}
+ 	</select>
+ 	
+ 	<update id="update" parameterType="com.fin.entity.Dept">
+ 		<![CDATA[
+ 			update dept t set t.deptname = #{deptname} , t.empname = #{empname}
+ 			where t.deptno = #{deptno}
+ 		]]>
+ 	</update>
+ 	
+ 	<insert id="insert" parameterType="com.fin.entity.Dept">
+ 		<![CDATA[
+ 			insert into dept (deptno,deptname,empname) values(#{deptno},#{deptname},#{empname})
+ 		]]>
+ 	</insert>
+ 	
+ 	<delete id="remove" parameterType="com.fin.entity.Dept">
+ 		<![CDATA[
+ 			delete from dept where deptno = #{deptno}
+ 		]]>
+ 	</delete>
+ </mapper>

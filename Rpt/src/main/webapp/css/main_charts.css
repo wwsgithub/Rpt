@@ -1,0 +1,60 @@
+.mod-box {
+    background: #f7f8fc;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+.mod-box .mod-title {
+    padding: 0 15px;
+    height: 38px;
+    line-height: 38px;
+    font-size: 16px;
+    color: #1269c7;
+    border-bottom: 1px solid #4a95e6;
+}
+.icon-human {
+    background: url("images/icon-human.png") no-repeat center;
+}
+.page-desk .mod-box .mod-title .more-a {
+    color: #1269c7;
+}
+.human-box {
+    position: relative;
+    padding: 15px 15px 10px 145px;
+    height: 210px;
+}
+.human-box .number-statistic-box {
+    position: absolute;
+    left: 0;
+    top: 15px;
+}
+.number-statistic-box .p-time {
+    text-align: center;
+    font-size: 12px;
+    color: #999999;
+    line-height: 20px;
+    margin-bottom: 8px;
+}
+.number-statistic-box .p-name {
+    padding-top: 10px;
+    font-size: 16px;
+    color: #000000;
+    text-align: center;
+    line-height: 30px;
+}
+.human-box .chart-box {
+    height: 210px;
+}
+.human-box .chart-box .chart-01, .human-box .chart-box .chart-02 {
+    position: relative;
+    float: left;
+    width: 50%;
+    height: 100%;
+}
+.number-statistic-box .p-time {
+    text-align: center;
+    font-size: 12px;
+    color: #999999;
+    line-height: 20px;
+    margin-bottom: 8px;
+    margin-left:20px;
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ <mapper namespace="com.fin.dao.AdvertDAO">
+ 	<select id="findAll" resultType="com.fin.entity.AdvertModel">
+ 		select * from advert order by istop desc,starttime desc
+ 	</select>
+ 	
+ 	<insert id="insert" parameterType="map">
+ 		<![CDATA[
+ 			insert into advert(title,content,starttime,istop)
+ 		 	values(#{title},#{content},now(),#{istop})
+ 		]]>
+ 	</insert>
+ </mapper>

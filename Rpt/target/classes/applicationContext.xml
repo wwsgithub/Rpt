@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:util="http://www.springframework.org/schema/util"  
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">
+
+	<!-- 开启组件扫描 -->
+	<context:component-scan base-package="com.fin"></context:component-scan>
+	
+	<!-- 综合元素，包含多种mvc注解bean -->
+	<mvc:annotation-driven></mvc:annotation-driven>
+	
+	<!-- 定义viewResolver -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 前后缀 -->
+		<property name="prefix" value="/WEB-INF/view/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+	
+	<!-- 整合mybatis -->
+	<!-- 使用durid -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource " init-method="init" destroy-method="close">
+		<!-- 基本属性 url、user、password -->
+		<property name="url" value="jdbc:mysql:///financerpt?useUnicode=true&amp;characterEncoding=utf8"></property>
+		<property name="username" value="root" />
+		<property name="password" value="123456" />
+		<property name="connectionProperties" value="com.mysql.jdbc.Driver"></property>
+		<!-- 配置初始化大小、最小、最大 -->
+		<property name="initialSize" value="1" /> 
+		<property name="minIdle" value="1" /> 
+		<property name="maxActive" value="20" />
+		<!-- 配置获取连接等待超时的时间 --> 
+		<property name="maxWait" value="60000" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 --> 
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		<property name="validationQuery" value="SELECT 'x'" /> 
+		<property name="testWhileIdle" value="true" /> 
+		<property name="testOnBorrow" value="false" /> 
+		<property name="testOnReturn" value="false" />
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 --> 
+		<!-- 如果用Oracle，则把poolPreparedStatements配置为true，mysql可以配置为false。分库分表较多的数据库，建议配置为false。 --> 
+		<property name="poolPreparedStatements" value="false" /> 
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+		<!-- 配置监控统计拦截的filters，去掉后监控界面sql无法统计 --> 
+		<property name="filters" value="stat" />
+	</bean>
+	<!-- 使用BoneCP连接池 -->
+	<!-- <bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">
+		<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+		<property name="jdbcUrl" value="jdbc:mysql:///financerpt?useUnicode=true&amp;characterEncoding=utf8"></property>
+		<property name="username" value="root"></property>
+		<property name="password" value="123456"></property>
+		检查数据库连接池中空闲连接的间隔时间，单位是分，默认值：240，如果要取消则设置为0  
+        <property name="idleConnectionTestPeriod" value="240" />  
+        连接池中未使用的链接最大存活时间，单位是分，默认值：60，如果要永远存活设置为0  
+        <property name="idleMaxAge" value="60" />  
+        每个分区最大的连接数  
+        <property name="maxConnectionsPerPartition" value="30" />  
+        每个分区最小的连接数  
+        <property name="minConnectionsPerPartition" value="10" />  
+        分区数 ，默认值2，最小1，推荐3-4，视应用而定  
+        <property name="partitionCount" value="4" />  
+        每次去拿数据库连接的时候一次性要拿几个,默认值：2  
+        <property name="acquireIncrement" value="5" />  
+        缓存prepared statements的大小，默认值：0  
+        <property name="statementsCacheSize" value="5" />  
+        每个分区释放链接助理进程的数量，默认值：3，除非你的一个数据库连接的时间内做了很多工作，不然过多的助理进程会影响你的性能  
+        <property name="releaseHelperThreads" value="3" />
+	</bean> -->
+	<!-- 配置sqlSessionFactory -->
+	<bean id="ssf" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 连接参数信息 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- SQL定义文件 -->
+		<property name="mapperLocations" value="classpath*:com/fin/mapper/*.xml"></property>
+	</bean>
+	<!-- 自动扫描包接口文件 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 自动注入ssf -->
+		<property name="basePackage" value="com.fin.dao"></property>
+	</bean>
+</beans>
